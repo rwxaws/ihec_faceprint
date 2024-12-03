@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        #videoElement { width: 100%; margin-bottom: 20px; }
+        .controls { display: flex; gap: 10px; margin: 20px 0; }
+        select, button { padding: 10px; font-size: 16px; }
+        button { cursor: pointer; }
+        #entryButton { background-color: #2ecc71; color: #ecf0f1; border: none; border-radius: 10px}
+        #leaveButton { background-color: #c0392b; color: #ecf0f1; border: none; border-radius: 10px}
+        #employeeSelect { flex-grow: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <video id="videoElement" autoplay></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        
+        <div class="controls">
+            <button id="entryButton" onclick="handleEntry()">بصمة دخول</button>
+            <select id="employeeSelect">
+                <option value="">اختر الموظف</option>
+            </select>
+            <button id="leaveButton" onclick="handleLeave()">بصمة خروج</button>
+        </div>
+    </div>
+
+    <script>
+        let video  = document.getElementById('videoElement');
+        let canvas = document.getElementById('canvas');
+        let select = document.getElementById('employeeSelect');
+
+        // Start video stream
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {video.srcObject = stream;}).catch(err => console.error(err));
+
+        // Load employees from spreadsheet
+        google.script.run.withSuccessHandler(populateEmployees).getEmployees();
+
+        function populateEmployees(employees) {
+            employees.forEach(emp => {
+                let option = document.createElement('option');
+                option.value = emp.emp_gov_num;
+                option.text = `${emp.emp_name}`;
+                select.appendChild(option);
+            });
+        }
+
+        function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            return canvas.toDataURL('image/jpeg');
+        }
+
+        function handleEntry() {
+            if (!select.value) {
+                alert('يرجى اختيار الموظف');
+                return;
+            }
+            let lat, lng;
+            const imageData = captureImage();
+            navigator.geolocation.getCurrentPosition(function(position) {
+              lat = position.coords.latitude;
+              lng = position.coords.longitude;
+              selectedEmpName = select.options[select.selectedIndex].text;
+              google.script.run.processEntry(select.value, selectedEmpName, imageData, lat, lng);
+              alert(`بصمة دخول: ${selectedEmpName}`);
+            })
+        }
+
+        function handleLeave() {
+            if (!select.value) {
+                alert('يرجى اختيار الموظف');
+                return;
+            }
+            let lat, lng;
+            const imageData = captureImage();
+            navigator.geolocation.getCurrentPosition(function(position) {
+              lat = position.coords.latitude;
+              lng = position.coords.longitude;
+              selectedEmpName = select.options[select.selectedIndex].text;
+              google.script.run.processLeave(select.value, selectedEmpName, imageData, lat, lng);
+              alert(`بصمة خروج: ${selectedEmpName}`);
+            });
+            
+        }
+    </script>
+</body>
+</html>
