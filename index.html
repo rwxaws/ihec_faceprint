@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base target="_top">
+    <title>نظام حضور الموظفين</title>
+    
+    <?!= include('styles') ?>
+</head>
+<body>
+    <div class="container">
+        <!-- Video capture section -->
+        <div class="video-section">
+            <video id="videoElement" autoplay muted playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+        
+        <!-- Controls section -->
+        <div class="controls">
+            <button id="entryButton" type="button" class="btn btn-entry" onclick="handleEntry()">
+                بصمة دخول
+            </button>
+            
+            <div class="select-container">
+                <select id="centerSelect" class="form-select" aria-label="اختر المركز" onchange="filterEmployees()">
+                    <option value="">اختر المركز</option>
+                </select>
+                
+                <select id="employeeSelect" class="form-select" aria-label="اختر الموظف">
+                    <option value="">اختر الموظف</option>
+                </select>
+            </div>
+            
+            <button id="leaveButton" type="button" class="btn btn-leave" onclick="handleLeave()">
+                بصمة خروج
+            </button>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="spinner"></div>
+            <span>جاري المعالجة...</span>
+        </div>
+    </div>
+
+    <?!= include('scripts') ?>
+</body>
+</html>

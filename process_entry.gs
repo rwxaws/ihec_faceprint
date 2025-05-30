@@ -1,6 +1,4 @@
 function processEntry(empId, empName, imageData, lat, lng, selectedCenter) {
-  // Use a lock service to ensure no duplicate entries are allowed
-  // const lock = LockService.getScriptLock();
   const folder = DriveApp.getFolderById(FOLDERID);
   const timestamp = Utilities.formatDate(new Date(), 'GMT+3', 'yyyy-MM-dd hh:mm:ss a');
   const fileName = `${empId}_entry_${timestamp}.jpg`;

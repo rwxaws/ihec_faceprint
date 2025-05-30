@@ -1,0 +1,102 @@
+<script>
+    let video  = document.getElementById('videoElement');
+    let canvas = document.getElementById('canvas');
+    let centerSelect = document.getElementById('centerSelect');
+    let employeeSelect = document.getElementById('employeeSelect');
+    let allEmployees = []; // Store all employees
+
+    // Start video stream
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {video.srcObject = stream;}).catch(err => console.error(err));
+
+    // Load centers from spreadsheet
+    google.script.run.withSuccessHandler(populateCenters).getCenters();
+    
+    // Load employees from spreadsheet
+    google.script.run.withSuccessHandler(storeEmployees).getEmployees();
+
+    function populateCenters(centers) {
+        centers.forEach(center => {
+            let option = document.createElement('option');
+            option.value = center;
+            option.text = center;
+            centerSelect.appendChild(option);
+        });
+    }
+
+    function storeEmployees(employees) {
+        allEmployees = employees; // Store all employees
+    }
+
+    function populateEmployees(employees) {
+        // Clear existing options except the first one
+        while (employeeSelect.options.length > 1) {
+            employeeSelect.remove(1);
+        }
+        
+        // Add new options
+        employees.forEach(emp => {
+            let option = document.createElement('option');
+            option.value = emp.emp_voter_num;
+            option.text = `${emp.emp_name}`;
+            // Store center as data attribute for filtering
+            option.setAttribute('data-center', emp.emp_center);
+            employeeSelect.appendChild(option);
+        });
+    }
+
+    function filterEmployees() {
+        const selectedCenter = centerSelect.value;
+
+        if (!selectedCenter) {
+            return;
+        }
+        
+        // Filter employees by the selected center
+        let filteredEmployees = allEmployees.filter(emp => emp.emp_center == selectedCenter);
+        populateEmployees(filteredEmployees);
+    }
+
+    function captureImage() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        return canvas.toDataURL('image/jpeg');
+    }
+
+    function handleEntry() {
+        if (!employeeSelect.value) {
+            alert('يرجى اختيار الموظف');
+            return;
+        }
+        let lat, lng;
+
+        const imageData = captureImage();
+        navigator.geolocation.getCurrentPosition(function(position) {
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+          selectedEmpName = employeeSelect.options[employeeSelect.selectedIndex].text;
+          selectedCenter  = centerSelect.value;
+          google.script.run.processEntry(employeeSelect.value, selectedEmpName, imageData, lat, lng, selectedCenter);
+          alert(`بصمة دخول: ${selectedEmpName}`);
+        })
+    }
+
+    function handleLeave() {
+        if (!employeeSelect.value) {
+            alert('يرجى اختيار الموظف');
+            return;
+        }
+        let lat, lng;
+
+        const imageData = captureImage();
+        navigator.geolocation.getCurrentPosition(function(position) {
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+          selectedEmpName = employeeSelect.options[employeeSelect.selectedIndex].text;
+          selectedCenter  = centerSelect.value;
+          google.script.run.processLeave(employeeSelect.value, selectedEmpName, imageData, lat, lng, selectedCenter);
+          alert(`بصمة خروج: ${selectedEmpName}`);
+        });
+        
+    }
+</script>

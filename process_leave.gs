@@ -1,5 +1,4 @@
 function processLeave(empId, empName, imageData, lat, lng, selectedCenter) {
-  
   const folder = DriveApp.getFolderById(FOLDERID);
   const timestamp = Utilities.formatDate(new Date(), 'GMT+3', 'yyyy-MM-dd hh:mm:ss a');
   const fileName = `${empId}_leave_${timestamp}.jpg`;

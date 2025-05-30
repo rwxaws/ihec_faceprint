@@ -1,6 +1,12 @@
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Employee Attendance System');
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .setTitle('نظام بصمة الوجه')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 function getEmployees() {
